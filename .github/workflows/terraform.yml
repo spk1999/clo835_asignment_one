@@ -39,7 +39,7 @@ jobs:
         # Unit test
         # docker run -p 80:8080 --name nodeapp $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
         docker ps
-        echo "Pause for 10 seconds to let container start"
+        # echo "Pause for 10 seconds to let container start"
         # sleep 10
         # curl localhost -vvv
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG8
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
