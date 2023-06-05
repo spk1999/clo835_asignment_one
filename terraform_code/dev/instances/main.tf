@@ -52,6 +52,14 @@ resource "aws_instance" "my_amazon" {
   key_name                    = aws_key_pair.my_key.key_name
   vpc_security_group_ids             = [aws_security_group.my_sg.id]
   associate_public_ip_address = false
+  user_data                   = <<EOF
+  #!/bin/bash
+
+  sudo yum update -y
+  sudo yum install -y docker
+  sudo usermod -aG docker ec2-user
+  sudo service docker restart
+  EOF
 
   lifecycle {
     create_before_destroy = true
@@ -67,13 +75,13 @@ resource "aws_instance" "my_amazon" {
 
 # Adding SSH key to Amazon EC2
 resource "aws_key_pair" "my_key" {
-  key_name   = "sujan"
+  key_name   = local.name_prefix
   public_key = file("${local.name_prefix}.pub")
 }
 
 # Security Group
 resource "aws_security_group" "my_sg" {
-  name        = "allow_sshs"
+  name        = "allow_ssh"
   description = "Allow SSH inbound traffic"
   vpc_id      = data.aws_vpc.default.id
 
@@ -85,6 +93,15 @@ resource "aws_security_group" "my_sg" {
     cidr_blocks      = ["0.0.0.0/0"]
     ipv6_cidr_blocks = ["::/0"]
   }
+  ingress {
+    description      = "Custom ports for colours"
+    from_port        = 8801
+    to_port          = 8803
+    protocol         = "tcp"
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
+  }
+  
 
   egress {
     from_port        = 0
@@ -109,4 +126,12 @@ resource "aws_eip" "static_eip" {
       "Name" = "${local.name_prefix}-eip"
     }
   )
+}
+
+resource "aws_ecr_repository" "my_repository" {
+  name = "myapp"
+}
+
+resource "aws_ecr_repository" "my_rep" {
+  name = "mydb"
 }
